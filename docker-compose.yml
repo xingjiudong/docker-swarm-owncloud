@@ -1,0 +1,73 @@
+version: '3.1'
+
+volumes:
+  ownmysql:
+    driver: "${VOLUME_DRIVER}"
+  owncloud1:
+    driver: "${VOLUME_DRIVER}"
+  owncloud2:
+    driver: "${VOLUME_DRIVER}"
+  nginx:
+    driver: "${VOLUME_DRIVER}"
+networks:
+  docker-network:
+    external: true
+secrets:
+  ${SSL_CERTIFICATE}:
+    external: true
+  ${SSL_CERTIFICATE_KEY}:
+    external: true
+  ${SSL_CERTIFICATE_CRT}:
+    external: true
+services:
+  ownmysql:
+    image: mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - docker-network
+    volumes:
+      - ownmysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_USER=owncloud
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=owncloud
+  owncloud:
+    image: xingjiudong/owncloud
+    ports:
+       - "8443:443"
+       - "81:80"
+    networks:
+      - docker-network
+    volumes:
+      - owncloud1:/var/www/html
+      - owncloud2:/etc/apache2
+    environment:
+      - SSL_CERTIFICATE=${SSL_CERTIFICATE}
+      - SSL_CERTIFICATE_KEY=${SSL_CERTIFICATE_KEY}
+      - SSL_CERTIFICATE_CRT=${SSL_CERTIFICATE_CRT}
+    secrets:
+      - ${SSL_CERTIFICATE}
+      - ${SSL_CERTIFICATE_KEY}
+      - ${SSL_CERTIFICATE_CRT}
+  nginx:
+    image: xingjiudong/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - docker-network
+    volumes:
+      - nginx:/etc/nginx
+    environment:
+      - SERVER_NAME=${SERVER_NAME}
+      - SERVER_PORT=8443
+      - SERVER_A_IP=${SERVER_A_IP}
+      - SERVER_B_IP=${SERVER_B_IP}
+      - SERVER_C_IP=${SERVER_C_IP}
+      - SSL_CERTIFICATE=${SSL_CERTIFICATE}
+      - SSL_CERTIFICATE_KEY=${SSL_CERTIFICATE_KEY}
+    secrets:
+      - ${SSL_CERTIFICATE}
+      - ${SSL_CERTIFICATE_KEY}
