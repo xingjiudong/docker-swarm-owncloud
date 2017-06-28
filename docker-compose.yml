@@ -62,7 +62,7 @@ services:
       - nginx:/etc/nginx
     environment:
       - SERVER_NAME=${SERVER_NAME}
-      - SERVER_PORT=8443
+      - SERVER_PORT=${SERVER_PORT}
       - SERVER_A_IP=${SERVER_A_IP}
       - SERVER_B_IP=${SERVER_B_IP}
       - SERVER_C_IP=${SERVER_C_IP}
