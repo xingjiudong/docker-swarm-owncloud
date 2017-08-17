@@ -1,2 +1,2 @@
 # owncloud-compose
-owncloud,mysql,nginx
+./initiate

@@ -22,6 +22,9 @@ secrets:
 services:
   ownmysql:
     image: mysql
+    restart: on-failure:10
+    logging:
+      driver: "journald"
     ports:
       - "3306:3306"
     networks:
@@ -35,9 +38,14 @@ services:
       - MYSQL_DATABASE=owncloud
   owncloud:
     image: xingjiudong/owncloud
+    restart: on-failure:10
+    logging:
+      driver: "journald"
     ports:
        - "8443:443"
        - "81:80"
+    depends_on:
+       - "ownmysql"
     networks:
       - docker-network
     volumes:
@@ -51,8 +59,11 @@ services:
       - ${SSL_CERTIFICATE}
       - ${SSL_CERTIFICATE_KEY}
       - ${SSL_CERTIFICATE_CRT}
-  nginx:
+  proxy:
     image: xingjiudong/nginx
+    restart: on-failure:10
+    logging:
+      driver: "journald"
     ports:
       - "80:80"
       - "443:443"
