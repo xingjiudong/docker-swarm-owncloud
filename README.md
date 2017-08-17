@@ -1,2 +1,2 @@
 # owncloud-compose
-./initiate
+./initiate up -d

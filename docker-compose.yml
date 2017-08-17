@@ -1,11 +1,11 @@
 version: '3.1'
 
 volumes:
-  ownmysql:
+  owndb:
     driver: "${VOLUME_DRIVER}"
-  owncloud1:
+  owncloud_data:
     driver: "${VOLUME_DRIVER}"
-  owncloud2:
+  owncloud_apache2:
     driver: "${VOLUME_DRIVER}"
   proxy:
     driver: "${VOLUME_DRIVER}"
@@ -20,8 +20,9 @@ secrets:
   ${SSL_CERTIFICATE_CRT}:
     external: true
 services:
-  ownmysql:
-    image: mysql
+  owndb:
+    container_name: owndb
+    image: mysql:${MYSQL_VERSION}
     restart: on-failure:10
     logging:
       driver: "journald"
@@ -30,14 +31,15 @@ services:
     networks:
       - docker-network
     volumes:
-      - ownmysql:/var/lib/mysql
+      - owndb:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_USER=owncloud
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=owncloud
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
   owncloud:
-    image: xingjiudong/owncloud
+    container_name: owncloud 
+    image: xingjiudong/owncloud:${OWNCLOUD_VERSION}
     restart: on-failure:10
     logging:
       driver: "journald"
@@ -45,12 +47,12 @@ services:
        - "8443:443"
        - "81:80"
     depends_on:
-       - "ownmysql"
+       - "owndb"
     networks:
       - docker-network
     volumes:
-      - owncloud1:/var/www/html
-      - owncloud2:/etc/apache2
+      - owncloud_data:/var/www/html
+      - owncloudapache2:/etc/apache2
     environment:
       - SSL_CERTIFICATE=${SSL_CERTIFICATE}
       - SSL_CERTIFICATE_KEY=${SSL_CERTIFICATE_KEY}
@@ -60,7 +62,8 @@ services:
       - ${SSL_CERTIFICATE_KEY}
       - ${SSL_CERTIFICATE_CRT}
   proxy:
-    image: xingjiudong/nginx
+    container_name: proxy
+    image: xingjiudong/nginx:{NGINX_VERSION}
     restart: on-failure:10
     logging:
       driver: "journald"
