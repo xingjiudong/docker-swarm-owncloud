@@ -7,7 +7,7 @@ volumes:
     driver: "${VOLUME_DRIVER}"
   owncloud2:
     driver: "${VOLUME_DRIVER}"
-  nginx:
+  proxy:
     driver: "${VOLUME_DRIVER}"
 networks:
   docker-network:
@@ -70,7 +70,7 @@ services:
     networks:
       - docker-network
     volumes:
-      - nginx:/etc/nginx
+      - proxy:/etc/nginx
     environment:
       - SERVER_NAME=${SERVER_NAME}
       - SERVER_PORT=${SERVER_PORT}
